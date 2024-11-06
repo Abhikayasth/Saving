@@ -3,7 +3,6 @@ import User from "../models/user.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
-import bcrypt from 'bcryptjs';
 
 const generateAccessAndRefreshTokens = async(userId)=>{
     try{
@@ -24,6 +23,7 @@ const generateAccessAndRefreshTokens = async(userId)=>{
 }
 
 const registerUser = asyncHandler(async(req,res) => {
+    console.log(req.body);
     const { fullName, email, password } = req.body;
     console.log("fullname: ",fullName);
     console.log("email: ",email);
@@ -32,7 +32,7 @@ const registerUser = asyncHandler(async(req,res) => {
     // const hashedPassword = await bcrypt.hash(password, 10);
     // console.log(hashedPassword);
 
-    if( [fullName, email, password].some((field) => field === "") ){
+    if( !fullName || !email || !password){
         throw new ApiError(400,"All Fields are required");
     }
 

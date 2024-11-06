@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
 
-const SignIn = ({ onClose }) => {
+const SignIn = ({ onClose, toggle }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -84,8 +84,7 @@ const SignIn = ({ onClose }) => {
           <button 
             className="text-teal-600 hover:underline ml-1"
             onClick={() => {
-              navigate('/signup'); // Use navigate to go to the Sign Up page
-              onClose(); // Optionally close the modal when navigating
+              toggle();
             }}
           >
             Sign Up

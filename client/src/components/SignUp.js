@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
+import { SERVER } from '../constant.js';
 
-const SignUp = ({ onClose }) => {
+const SignUp = ({ onClose, toggle }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setfullName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -12,7 +14,7 @@ const SignUp = ({ onClose }) => {
     e.preventDefault();
     setIsSubmitting(true); // Start submitting
 
-    if (!email || !password || !confirmPassword) {
+    if (!fullName || !email || !password || !confirmPassword) {
       setErrorMessage('Please fill in all fields.');
       setIsSubmitting(false);
       return;
@@ -28,14 +30,16 @@ const SignUp = ({ onClose }) => {
       return;
     }
     
+    console.log(fullName, email, password, confirmPassword);  
     // Simulate an API call for sign-up
     try {
-      const response = await fetch('https://your-api-endpoint.com/signup', {
+      const response = await fetch(`${SERVER}/user/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({fullName, email, password }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -46,6 +50,7 @@ const SignUp = ({ onClose }) => {
       setEmail('');
       setPassword('');
       setConfirmPassword('');
+      setfullName('');
       setErrorMessage('');
       onClose(); // Close modal on successful sign-up
     } catch (error) {
@@ -64,6 +69,16 @@ const SignUp = ({ onClose }) => {
         <h2 className="text-2xl font-bold mb-6 text-center text-teal-600">Sign Up</h2>
         {errorMessage && <p className="text-red-500 text-sm mb-4">{errorMessage}</p>}
         <form className="flex flex-col space-y-4" onSubmit={handleSubmit}>
+          
+          <input
+            type="text"
+            value={fullName}
+            onChange={(e) => setfullName(e.target.value)}
+            placeholder="Full Name"
+            className="p-2 border border-teal-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200"
+            required
+          />
+          
           <input
             type="email"
             value={email}
@@ -98,7 +113,7 @@ const SignUp = ({ onClose }) => {
         </form>
         <p className="text-sm text-center mt-4">
           Already have an account? 
-          <button className="text-teal-600 hover:underline ml-1" onClick={() => console.log('Navigate to Sign In')}>
+          <button className="text-teal-600 hover:underline ml-1" onClick={() => toggle()}>
             Sign In
           </button>
         </p>

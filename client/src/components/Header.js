@@ -118,7 +118,7 @@ const Header = () => {
           onClick={closeAuthModal} // Close modal on background click
         >
           <div className="bg-white p-8 rounded-md shadow-lg" onClick={(e) => e.stopPropagation()}>
-            {isSignUp ? <SignUp /> : <SignIn />}
+            {isSignUp ? <SignUp onClose={handleAuthToggle} toggle={toggleSignUp}/> : <SignIn onClose={handleAuthToggle} toggle={toggleSignUp}/>}
             <button
               className="mt-4 text-teal-600 font-semibold"
               onClick={toggleSignUp} // Toggle between Sign In and Sign Up
