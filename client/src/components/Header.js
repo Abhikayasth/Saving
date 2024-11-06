@@ -21,6 +21,9 @@ const Header = () => {
     setIsSignUp((prev) => !prev);
   };
 
+  const name = localStorage.getItem('fullName');
+  const email = localStorage.getItem('email');
+
   const closeAuthModal = () => {
     setIsAuthOpen(false);
     setIsSignUp(false); // Reset to SignIn when closing the modal
@@ -55,12 +58,26 @@ const Header = () => {
           </div>
 
           {/* Create Account Button */}
-          <button
-            className="bg-white text-teal-600 px-4 py-2 rounded-md font-semibold hover:bg-blue-400 hover:text-white transition duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
-            onClick={handleAuthToggle} // Open auth modal on click
-          >
-            Create Account
-          </button>
+          <div className="flex items-center">
+            {name && email ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-lg font-semibold">{name}</span>
+                {/* <button
+                  onClick={handleAuthToggle}
+                  className="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded"
+                >
+                  Logout
+                </button> */}
+              </div>
+            ) : (
+              <button
+                onClick={handleAuthToggle}
+                className="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded"
+              >
+                Create Account
+              </button>
+            )}
+          </div>
 
           {/* Search Bar Toggle Button for Mobile */}
           <div className="flex items-center md:hidden ml-4">

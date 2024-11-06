@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
+import { SERVER } from '../constant.js';
 
 const SignIn = ({ onClose, toggle }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate(); // Hook to navigate between routes
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,24 +22,32 @@ const SignIn = ({ onClose, toggle }) => {
 
     // Simulate an API call for sign-in
     try {
-      const response = await fetch('https://your-api-endpoint.com/signin', {
+      const response = await fetch(`${SERVER}/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
         throw new Error('Failed to sign in');
       }
 
+      const {data} = await response.json();
+
+      localStorage.setItem("_id", data._id);
+      localStorage.setItem("fullName", data.fullName);
+      localStorage.setItem("email", data.email);
+      localStorage.setItem("balance", data.balance);
+
       // Reset form fields on success
       setEmail('');
       setPassword('');
       setErrorMessage('');
       onClose(); // Close modal on successful sign-in
-      navigate('/dashboard'); // Redirect to dashboard or another page after sign-in
+      navigate('/'); // Redirect to dashboard or another page after sign-in
     } catch (error) {
       setErrorMessage(error.message || 'An error occurred. Please try again.');
     } finally {
