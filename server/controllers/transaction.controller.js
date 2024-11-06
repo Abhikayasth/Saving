@@ -6,7 +6,8 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const addTransaction = asyncHandler(async(req, res) => {
   const userId = req.user._id;
-  const { amount, type } = req.body;
+  const { amount, type, description, date } = req.body;
+  console.log(date);
   try {
     const user = await User.findById(userId);
 
@@ -20,7 +21,7 @@ export const addTransaction = asyncHandler(async(req, res) => {
       res.status(400).json(new ApiError(400, 'Insufficient Balance'));
     }
 
-    const newTransaction = new Transaction({ userId, amount, type });
+    const newTransaction = new Transaction({ userId, amount, type, date, description });
     await newTransaction.save();
 
     await user.save();

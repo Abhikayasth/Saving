@@ -2,7 +2,7 @@ import User from "../models/user.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import jwt from "jsonwebtoken"
-
+import { refreshAccessToken } from "../controllers/user.controller.js"
 
 export const verifyJWT = asyncHandler(async(req,res,next) => {
     try {
@@ -12,8 +12,16 @@ export const verifyJWT = asyncHandler(async(req,res,next) => {
             throw new ApiError(401,"Unauthorized Request")
         }
     
-        const decodeToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-        console.log(decodeToken)
+        let decodeToken;
+        try {
+          decodeToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        } catch (error) {
+          if (error instanceof jwt.TokenExpiredError) {
+            return res.status(401).json(new ApiError(401, 'Token Expired'));
+          } else {
+            throw new ApiError(401, 'Invalid Access Token');
+          }
+        }
     
         const user = await User.findById(decodeToken?._id).select("-password -refreshToken")
     
@@ -23,6 +31,7 @@ export const verifyJWT = asyncHandler(async(req,res,next) => {
         req.user = user;
         next()
     } catch (error) {
+
         throw new ApiError(401, error?.message || "Something went wrong in Auth Middlware")
     }
 })

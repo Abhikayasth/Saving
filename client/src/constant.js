@@ -1,1 +1,1 @@
-export const SERVER = "https://potential-giggle-g9x996jgvvxcvpvg-5000.app.github.dev"
+export const SERVER = "http://localhost:5000"

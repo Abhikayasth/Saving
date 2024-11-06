@@ -1,38 +1,105 @@
-import React, { useState } from 'react';
-import { FaArrowDown, FaArrowUp, FaSearch } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { FaArrowDown, FaArrowUp, FaSearch } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import {SERVER} from '../constant.js'
+import { useNavigate } from "react-router-dom";
 
 const FinancialManagement = () => {
-  const [entries, setEntries] = useState([]);
+
+  const getCurrentDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  const [entries, setEntries] = useState([])
   const [formData, setFormData] = useState({
-    date: '',
-    description: '',
-    amount: '',
-    type: 'debit',
+    date: getCurrentDate(),
+    description: "",
+    amount: "",
+    type: "debit",
   });
-  const [filter, setFilter] = useState('');
-  const [savingsTarget, setSavingsTarget] = useState(600); // Default savings target
+
+  const [filter, setFilter] = useState("");
+  const [savingsTarget, setSavingsTarget] = useState(600);
+  const [balance, setBalance] = useState(0);
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await fetch(`${SERVER}/transaction/`,{
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch transactions');
+        }
+        const {data} = await response.json();
+        console.log(data.transactions);
+        const transactions = data.transactions.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          if (dateA.getTime() === dateB.getTime()) {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          }
+          return dateB - dateA;
+        });
+        setEntries(transactions);
+        setBalance(data.balance);
+      } catch (error) {
+        console.error('Error:', error);
+        navigate('/signin');
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setEntries([{ ...formData, id: Date.now() }, ...entries]);
-    setFormData({ date: '', description: '', amount: '', type: 'debit' });
+    const newTransaction = { ...formData};
+    console.log(newTransaction);
+    try {
+      const response = await fetch(`${SERVER}/transaction/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTransaction),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add transaction");
+      }
+
+      const {data} = await response.json();
+
+      setEntries([data.newTransaction, ...entries]);
+      setBalance(data.balance);
+      setFormData({ date: getCurrentDate(), description: "", amount: "", type: "debit" });
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
-  const filteredEntries = entries.filter(entry =>
-    entry.description.toLowerCase().includes(filter.toLowerCase())
-  );
+  // const filteredEntries = entries.filter((entry) =>
+  //   entry.description.toLowerCase().includes(filter.toLowerCase())
+  // );
 
   const totalDebit = entries
-    .filter(entry => entry.type === 'debit')
+    .filter((entry) => entry.type === "debit")
     .reduce((acc, entry) => acc + parseFloat(entry.amount), 0);
   const totalCredit = entries
-    .filter(entry => entry.type === 'credit')
+    .filter((entry) => entry.type === "credit")
     .reduce((acc, entry) => acc + parseFloat(entry.amount), 0);
   const profitLoss = totalCredit - totalDebit;
 
@@ -47,9 +114,14 @@ const FinancialManagement = () => {
         className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 mb-4 transition-transform duration-300 hover:shadow-xl"
         onSubmit={handleSubmit}
       >
-        <h3 className="text-xl font-semibold mb-4 text-indigo-600 text-center">Add Transaction</h3>
+        <h3 className="text-xl font-semibold mb-4 text-indigo-600 text-center">
+          Add Transaction
+        </h3>
         <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-1" htmlFor="date">
+          <label
+            className="block text-gray-700 font-semibold mb-1"
+            htmlFor="date"
+          >
             Date
           </label>
           <input
@@ -63,7 +135,10 @@ const FinancialManagement = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-1" htmlFor="description">
+          <label
+            className="block text-gray-700 font-semibold mb-1"
+            htmlFor="description"
+          >
             Description
           </label>
           <input
@@ -78,7 +153,10 @@ const FinancialManagement = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-1" htmlFor="amount">
+          <label
+            className="block text-gray-700 font-semibold mb-1"
+            htmlFor="amount"
+          >
             Amount
           </label>
           <input
@@ -114,7 +192,9 @@ const FinancialManagement = () => {
 
       {/* Savings Target Input */}
       <div className="w-full max-w-md mb-4 bg-white rounded-lg shadow-lg p-6 transition-transform duration-300 hover:shadow-xl">
-        <h3 className="text-xl font-semibold mb-2 text-indigo-600">Set Savings Target</h3>
+        <h3 className="text-xl font-semibold mb-2 text-indigo-600">
+          Set Savings Target
+        </h3>
         <input
           type="number"
           value={savingsTarget}
@@ -128,12 +208,17 @@ const FinancialManagement = () => {
       <div className="w-full max-w-md mb-4 bg-white rounded-lg shadow-lg p-6 transition-transform duration-300 hover:shadow-xl">
         <h3 className="text-xl font-semibold mb-2 text-indigo-600">Summary</h3>
         <div className="flex flex-col gap-2">
-          <p>Total Debit: ₹{totalDebit.toFixed(2)}</p>
+        <p>Current Balance: ₹{balance.toFixed(2)}</p>
+          {/* <p>Total Debit: ₹{totalDebit.toFixed(2)}</p>
           <p>Total Credit: ₹{totalCredit.toFixed(2)}</p>
-          <p className={`font-bold ${profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <p
+            className={`font-bold ${
+              profitLoss >= 0 ? "text-green-600" : "text-red-600"
+            }`}
+          >
             Profit/Loss: ₹{profitLoss.toFixed(2)}
           </p>
-          <p>Savings Target: ₹{savingsTarget}</p>
+          <p>Savings Target: ₹{savingsTarget}</p> */}
         </div>
       </div>
 
@@ -150,7 +235,9 @@ const FinancialManagement = () => {
 
       {/* Display Entries */}
       <div className="w-full max-w-md mt-6">
-        <h3 className="text-xl font-semibold mb-4 text-indigo-600">Transaction History</h3>
+        <h3 className="text-xl font-semibold mb-4 text-indigo-600">
+          Transaction History
+        </h3>
         <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl">
           <table className="w-full">
             <thead>
@@ -163,26 +250,35 @@ const FinancialManagement = () => {
             </thead>
             <AnimatePresence>
               <tbody>
-                {filteredEntries.length > 0 ? (
-                  filteredEntries.map((entry) => (
+                {entries.length > 0 ? (
+                  entries.map((entry) => (
                     <motion.tr
-                      key={entry.id}
+                      key={entry._id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                       className="border-b hover:bg-indigo-50 transition-all duration-200"
                     >
-                      <td className="p-4">{entry.date}</td>
+                      <td className="p-4">{entry.date.split('T')[0]}</td>
                       <td className="p-4">{entry.description}</td>
-                      <td className="p-4 font-medium">₹{parseFloat(entry.amount).toFixed(2)}</td>
+                      <td className="p-4 font-medium">
+                        ₹{parseFloat(entry.amount).toFixed(2)}
+                      </td>
                       <td className="p-4 flex items-center gap-2">
-                        {entry.type === 'debit' ? (
+                        {entry.type === "debit" ? (
                           <FaArrowDown className="text-red-500 animate-pulse" />
                         ) : (
                           <FaArrowUp className="text-green-500 animate-pulse" />
                         )}
-                        <span className={entry.type === 'debit' ? 'text-red-600' : 'text-green-600'}>
-                          {entry.type.charAt(0).toUpperCase() + entry.type.slice(1)}
+                        <span
+                          className={
+                            entry.type === "debit"
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }
+                        >
+                          {entry.type.charAt(0).toUpperCase() +
+                            entry.type.slice(1)}
                         </span>
                       </td>
                     </motion.tr>

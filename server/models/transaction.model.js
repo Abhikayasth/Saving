@@ -14,6 +14,13 @@ const TransactionSchema = new Schema({
     type: String,
     enum: ['credit', 'debit'],
     required: true,
+  },
+  date: {
+    type: Date,
+    required: true,
+  },
+  description: {
+    type: String,
   }},
   {
     timestamps: true,
