@@ -1,4 +1,4 @@
-
+import User from '../models/user.model.js';
 import Transaction from '../models/transaction.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
@@ -8,19 +8,36 @@ export const addTransaction = asyncHandler(async(req, res) => {
   const userId = req.user._id;
   const { amount, type } = req.body;
   try {
+    const user = await User.findById(userId);
+
+    if (type === 'credit') {
+      user.balance += amount;
+    } else if (type === 'debit') {
+      user.balance -= amount;
+    }
+
+    if(user.balance < 0) {
+      res.status(400).json(new ApiError(400, 'Insufficient Balance'));
+    }
+
     const newTransaction = new Transaction({ userId, amount, type });
     await newTransaction.save();
-    res.status(201).json(new ApiResponse(201, newTransaction, 'Transaction added successfully'));
+
+    await user.save();
+
+    res.status(201).json(new ApiResponse(201, {newTransaction, balance: user.balance}, 'Transaction added successfully'));
   } catch (error) {
     res.status(500).json(new ApiError(500, error.message));
   }
 })
 
 export const getTransactions = asyncHandler(async(req, res) => {
-  const { userId } = req.user._id;
+  const userId  = req.user._id;
   try {
+    const user = await User.findById(userId);
     const transactions = await Transaction.find({ userId });
-    res.status(200).json(new ApiResponse(200, transactions, 'Transaction Fetched Successfully'));
+    console.log(transactions)
+    res.status(200).json(new ApiResponse(200, {transactions, balance: user.balance}, 'Transaction Fetched Successfully'));
   } catch (error) {
     res.status(500).json(new ApiError(500, error.message));
   }

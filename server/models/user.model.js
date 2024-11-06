@@ -1,4 +1,10 @@
 import { Schema, model } from 'mongoose';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import jwt from "jsonwebtoken"
+
+
+dotenv.config()
 
 const userSchema = new Schema({
   fullName: {
@@ -19,6 +25,10 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  balance:{
+    type: Number,
+    default: 0,
+  },
   refreshToken: {
       type: String,
     },
@@ -28,11 +38,24 @@ const userSchema = new Schema({
   }
 );
 
+// console.log(process.env.ACCESS_TOKEN_SECRET, process.env.ACCESS_TOKEN_EXPIRY)
+// console.log(process.env.REFRESH_TOKEN_SECRET, process.env.REFRESH_TOKEN_EXPIRY)
+
+userSchema.pre("save", async function (next) {
+  if(!this.isModified("password")) return  next()
+
+  this.password = await bcrypt.hash(this.password, 10)
+  next()
+})
+
 userSchema.methods.isPasswordCorrect = async function (password){
     return await bcrypt.compare(password, this.password)
 }
 
 userSchema.methods.generateAccessToken = function(){
+  
+  // console.log(this._id, this.email, this.fullName);
+
     return jwt.sign(
       {
         _id: this._id,
@@ -47,6 +70,7 @@ userSchema.methods.generateAccessToken = function(){
 }
 
 userSchema.methods.generateRefreshToken = function () {
+  //  console.log(this._id);
   return jwt.sign(
     {
       _id: this._id

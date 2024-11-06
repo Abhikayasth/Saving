@@ -3,14 +3,13 @@ import User from "../models/user.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
+import bcrypt from 'bcryptjs';
 
 const generateAccessAndRefreshTokens = async(userId)=>{
     try{
         const user = await User.findById(userId)
         const accessToken = user.generateAccessToken();
-        const refreshToken = user.generateRefreshToken();
-
-        // console.log(user.refreshToken)               
+        const refreshToken = user.generateRefreshToken();            
 
         user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave : false });
@@ -22,12 +21,16 @@ const generateAccessAndRefreshTokens = async(userId)=>{
     }catch(error){
         throw new ApiError("An error occured while generating tokens")
     }
-} 
+}
 
 const registerUser = asyncHandler(async(req,res) => {
     const { fullName, email, password } = req.body;
     console.log("fullname: ",fullName);
     console.log("email: ",email);
+    console.log("password", password);
+
+    // const hashedPassword = await bcrypt.hash(password, 10);
+    // console.log(hashedPassword);
 
     if( [fullName, email, password].some((field) => field === "") ){
         throw new ApiError(400,"All Fields are required");
@@ -65,12 +68,11 @@ const registerUser = asyncHandler(async(req,res) => {
       email,
       password,
     });
-    // console.log(user);
+    console.log(user);
     
     const createdUser = await User.findById(user._id).select(
       "-password -refreshToken"
     );
-    console.log(createdUser);
     
     if(!createdUser){
         throw new ApiError(500,"Something Went Wrong While registering User");
@@ -89,10 +91,13 @@ const loginUser = asyncHandler(async(req,res) => {
     }
 
     const user = await User.findOne({ email })
+    console.log(user);
 
     if(!user){
         throw new ApiError(404,'User Does Not Exist')
     }
+
+    console.log(password);
 
     const isPasswordValid = await user.isPasswordCorrect(password)
 
