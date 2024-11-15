@@ -3,7 +3,7 @@ import { FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
 import { SERVER } from '../constant.js';
 
-const SignIn = ({ onClose, toggle }) => {
+const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -36,17 +36,17 @@ const SignIn = ({ onClose, toggle }) => {
       }
 
       const {data} = await response.json();
+      console.log(data);
 
-      localStorage.setItem("_id", data._id);
-      localStorage.setItem("fullName", data.fullName);
-      localStorage.setItem("email", data.email);
-      localStorage.setItem("balance", data.balance);
+      localStorage.setItem("_id", data.user._id);
+      localStorage.setItem("fullName", data.user.fullName);
+      localStorage.setItem("email", data.user.email);
+      localStorage.setItem("balance", data.user.balance);
 
       // Reset form fields on success
       setEmail('');
       setPassword('');
       setErrorMessage('');
-      onClose(); // Close modal on successful sign-in
       navigate('/'); // Redirect to dashboard or another page after sign-in
     } catch (error) {
       setErrorMessage(error.message || 'An error occurred. Please try again.');
@@ -58,7 +58,7 @@ const SignIn = ({ onClose, toggle }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white shadow-lg rounded-lg p-8 w-96 relative transform transition-all duration-300 scale-100 hover:scale-105">
-        <button className="absolute top-4 right-4 text-gray-600 hover:text-gray-800" onClick={onClose}>
+        <button className="absolute top-4 right-4 text-gray-600 hover:text-gray-800" onClick={()=> {navigate('/')}}>
           <FaTimes className="text-lg" />
         </button>
         <h2 className="text-2xl font-bold mb-6 text-center text-teal-600">Sign In</h2>
@@ -92,9 +92,7 @@ const SignIn = ({ onClose, toggle }) => {
           Don't have an account? 
           <button 
             className="text-teal-600 hover:underline ml-1"
-            onClick={() => {
-              toggle();
-            }}
+            onClick={()=> {navigate('/signup')}}
           >
             Sign Up
           </button>

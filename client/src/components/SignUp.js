@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { SERVER } from "../constant.js";
+import {useNavigate} from "react-router-dom";
 
-const SignUp = ({ onClose, toggle }) => {
+const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setfullName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,7 +62,6 @@ const SignUp = ({ onClose, toggle }) => {
       setConfirmPassword("");
       setfullName("");
       setErrorMessage("");
-      onClose(); // Close modal on successful sign-up
     } catch (error) {
       setErrorMessage(error.message || "An error occurred. Please try again.");
     } finally {
@@ -72,7 +74,7 @@ const SignUp = ({ onClose, toggle }) => {
       <div className="bg-white shadow-lg rounded-lg p-8 w-96 relative transform transition-all duration-300 scale-100 hover:scale-105">
         <button
           className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
-          onClick={onClose}
+          onClick={()=>{navigate("/")}}
         >
           <FaTimes className="text-lg" />
         </button>
@@ -132,7 +134,7 @@ const SignUp = ({ onClose, toggle }) => {
           Already have an account?
           <button
             className="text-teal-600 hover:underline ml-1"
-            onClick={() => toggle()}
+            onClick={()=>{navigate('/login')}}
           >
             Sign In
           </button>

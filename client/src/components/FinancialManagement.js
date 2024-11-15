@@ -19,7 +19,6 @@ const FinancialManagement = () => {
     type: "debit",
   });
 
-  const [filter, setFilter] = useState("");
   const [savingsTarget, setSavingsTarget] = useState(600);
   const [balance, setBalance] = useState(0);
   const navigate = useNavigate();
@@ -56,7 +55,7 @@ const FinancialManagement = () => {
         setBalance(data.balance);
       } catch (error) {
         console.error('Error:', error);
-        navigate('/signin');
+        navigate('/login');
       }
     };
 
@@ -228,7 +227,7 @@ const FinancialManagement = () => {
           type="text"
           placeholder="Search by description"
           className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 transition duration-200"
-          onChange={(e) => setFilter(e.target.value)}
+          // onChange={(e) => setFilter(e.target.value)}
         />
         <FaSearch className="absolute right-3 top-3 text-gray-500" />
       </div>

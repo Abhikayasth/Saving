@@ -6,18 +6,20 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const addTransaction = asyncHandler(async(req, res) => {
   const userId = req.user._id;
-  const { amount, type, description, date } = req.body;
+  const { type, description, date } = req.body;
+  const amount = parseInt(req.body.amount);
   console.log(date);
   try {
     const user = await User.findById(userId);
-
+    const Bal = user.balance;
+    
     if (type === 'credit') {
-      user.balance += amount;
+      Bal += amount;
     } else if (type === 'debit') {
-      user.balance -= amount;
+      Bal -= amount;
     }
 
-    if(user.balance < 0) {
+    if(Bal < 0) {
       res.status(400).json(new ApiError(400, 'Insufficient Balance'));
     }
 

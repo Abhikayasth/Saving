@@ -1,33 +1,49 @@
 import React, { useState } from 'react';
 import logo from '../images/Logo.png'; // Replace with your logo path
 import { FaSearch } from 'react-icons/fa';
-import SignIn from './SignIn'; // Import SignIn Component
-import SignUp from './SignUp'; // Import SignUp Component
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isAuthOpen, setIsAuthOpen] = useState(false); // State to manage auth modal
-  const [isSignUp, setIsSignUp] = useState(false); // State to manage sign up or sign in
+  // const [isAuthOpen, setIsAuthOpen] = useState(false); // State to manage auth modal
+  // const [isSignUp, setIsSignUp] = useState(false); // State to manage sign up or sign in
+  const navigate = useNavigate();
+  const name = localStorage.getItem('fullName');
+  const email = localStorage.getItem('email');
 
+  // console.log("Name: " ,name, "E-Mail: " ,email);
+  
   const handleSearchToggle = () => {
     setIsSearchOpen((prev) => !prev);
   };
 
-  const handleAuthToggle = () => {
-    setIsAuthOpen((prev) => !prev);
+  const logoutUser = () => {
+    // Clear cookies
+    document.cookie = 'accessToken=; Max-Age=0; path=/; domain=' + window.location.hostname;
+
+    // Clear localStorage
+    localStorage.removeItem('fullName');
+    localStorage.removeItem('email');
+    localStorage.removeItem('balance');
+    localStorage.removeItem('_id');
+
+    // Redirect to login page
+    navigate('/login');
   };
 
-  const toggleSignUp = () => {
-    setIsSignUp((prev) => !prev);
-  };
+  // const handleAuthToggle = () => {
+  //   setIsAuthOpen((prev) => !prev);
+  // };
 
-  const name = localStorage.getItem('fullName');
-  const email = localStorage.getItem('email');
+  // const toggleSignUp = () => {
+  //   setIsSignUp((prev) => !prev);
+  // };
 
-  const closeAuthModal = () => {
-    setIsAuthOpen(false);
-    setIsSignUp(false); // Reset to SignIn when closing the modal
-  };
+
+  // const closeAuthModal = () => {
+  //   setIsAuthOpen(false);
+  //   setIsSignUp(false); // Reset to SignIn when closing the modal
+  // };
 
   return (
     <>
@@ -62,16 +78,16 @@ const Header = () => {
             {name && email ? (
               <div className="flex items-center space-x-4">
                 <span className="text-lg font-semibold">{name}</span>
-                {/* <button
-                  onClick={handleAuthToggle}
+                <button
+                  onClick={()=> {logoutUser()}}
                   className="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded"
                 >
                   Logout
-                </button> */}
+                </button>
               </div>
             ) : (
               <button
-                onClick={handleAuthToggle}
+                onClick={()=>{navigate('/login')}}
                 className="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded"
               >
                 Create Account
@@ -129,7 +145,7 @@ const Header = () => {
       </header>
 
       {/* Auth Modal */}
-      {isAuthOpen && (
+      {/* {isAuthOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center z-50"
           onClick={closeAuthModal} // Close modal on background click
@@ -144,7 +160,7 @@ const Header = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 };
